@@ -9,6 +9,24 @@
 		private static $_nbClient=0;
 		private $_collectionFact;	
 		
+		public function hydrate(array $donnees){
+			if (isset($donnees['idClient'])){
+				$this->setClient($donnees['idClient']);			
+			}
+			
+			if (isset($donnees['nom'])){
+				$this->setnom($donnees['nom']);							
+			}
+			
+			if (isset($donnees['prenom'])){
+				$this->setprenom($donnees['prenom']);
+			}
+
+			if (isset($donnees['adresse'])){
+				$this->setadresse($donnees['adresse']);								
+			}	
+		}
+		
 		// FONCTIONS MEMBRES -----------------
 		private static function initCli(){
 			self::$_nbClient++;
@@ -60,6 +78,10 @@
 			$this->_prenom=$prenom;
 		}
 		
+		public function setadresse($adresse){
+			$this->_adresse=$adresse;
+		}
+		
 		//Autres -------------------------------------------
 		
 		public function afficheCli(){
@@ -95,9 +117,27 @@
 		private $_dateFact;
 		private static $_nbFact=0; 
 		private $_client; //indiq quel client est rattache a la fact
-		private $_collectionProd;
 		private $_qteProd;
-		
+		private $_collectionProd;
+	
+		public function hydrate(array $donnees){
+			if (isset($donnees['idFact'])){
+				$this->setidFact($donnees['idFact']);			
+			}
+			
+			if (isset($donnees['modePaiement'])){
+				$this->setmodePaiement($donnees['modePaiement']);							
+			}
+			
+			if (isset($donnees['dateFact'])){
+				$this->setdateFact($donnees['dateFact']);
+			}
+
+			if (isset($donnees['qteProd'])){
+				$this->setqteprod($donnees['qteProd']);								
+			}				
+		}
+	
 		// FONCTIONS MEMBRES 	--------------------
 		private static function initFact(){
 			self::$_nbFact++;
@@ -150,6 +190,10 @@
 			$this->_dateFact=$dateFact;
 		}
 		
+		public function setqteprod($qte){
+			$this->_qteProd=$qte;
+		}
+		
 		//Autres
 		public function afficheFact(){
 			echo $this->_idFact.'<br/>';
@@ -184,6 +228,20 @@
 		private $_des;
 		private $_prix;
 		private static $_nbProd=0; 
+		
+		public function hydrate(array $donnees){
+			if (isset($donnees['numprod'])){
+				$this->setnumprod($donnees['numprod']);			
+			}
+			
+			if (isset($donnees['des'])){
+				$this->setdes($donnees['des']);							
+			}
+			
+			if (isset($donnees['prix'])){
+				$this->setprix($donnees['prix']);
+			}		
+		}
 		
 		// FONCTIONS MEMBRES ----------------------
 		private static function initProd(){
@@ -271,9 +329,57 @@
 		//Autres ------------------------------------	
 
 	}
+	
+	class managerClient{
+		private $_db;
+		
+		public function __construct($db){
+			$this->setDb($db);
+		}
+		
+		public function ajoutClient(client $client){
+			$nom=$client->_nom;
+			$prenom=$client->_prenom;
+			$adresse=$client->_adresse;
+			
+			$q=$this->_db->prepare('INSERT INTO client(nom,prenom,adresse)
+			VALUES (:nom,:prenom,:adresse)');
+			
+			$q->execute(array(
+				'nom'=>$nom,
+				'prenom'=>$prenom,
+				'adresse'=>$adresse));
+		}
+		
+		public function suppClient(client $client){
+			$idClient=$this->_idClient;
+			
+			$q->$this->_db->prepare('DELETE FROM client WHERE idClient= :idClient');
+			$q->execute(array('idClient'=>$idClient));
+		}
+		
+		public function modifClient(client $client){
+			$nom=$this->_nom;
+			$prenom=$this->_prenom;
+			$adresse=$this->_adresse;
+			
+			$q->$this->_db->prepare('UPDATE client
+									SET nom=:nom, prenom=:prenom, adresse=:adresse
+									WHERE idClient=:idClient');
+			$q->execute(array(
+				'nom'=>$nom,
+				'prenom'=>$prenom,
+				'adresse'=>$adresse));		
+		}
+		
+		public function setDb(PDO $db){
+			$this->_db=$db;
+		}
+	}
 
 //MAIN
 
+/*
 	$df1=new dfacture(1);
 	$df2=new dfacture(200);
 	
@@ -296,7 +402,22 @@
 	
 	
 	$c1->afficheCli();
-	//$f1->afficheFact();
+	$f1->afficheFact();*/
+	
+	$client1= new client(12,'PATULACCI','Marcel','LSPD Commissariat');
+	
+	try
+	{
+		$bdd = new PDO('mysql:host=localhost;dbname=facture','root','');
+	}
+	catch (Exception $e) 
+	{
+			die('Erreur : ' . $e->getMessage());
+	}
+	
+	$manager= new managerClient($bdd);
+	
+	$manager->ajoutClient($client1);
 
 	
 ?>
